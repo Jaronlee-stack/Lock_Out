@@ -1,6 +1,9 @@
 # lock_out
 
-A new Flutter project.
+FocusUp is a gamified mobile app built with Flutter that helps students manage their screen time and improve focus through engaging mechanics. The app uses the Pomodoro technique (25 minutes of focus, 5-minute breaks) and rewards users with XP (experience points) for completing sessions. As students accumulate XP, they’ll see a virtual tree or pet grow as a visual representation of their progress.
+This is to promote healthy study habits, reduce distractions from mobile devices, and make productivity feel rewarding instead of punishing, allowing them to balance out their screentime and homework
+Rather than restricting phone usage through forceful lockouts, the app rewards focus by turning study time into a game 
+
 
 ## Getting Started
 
