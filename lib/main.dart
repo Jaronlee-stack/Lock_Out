@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-
-// Import screens
 import 'screens/home_screen.dart';
 import 'screens/timer_screen.dart';
 import 'screens/rewards_screen.dart';
 import 'screens/settings_screen.dart';
+import 'package:focuspal/models/player.dart';
 
-void main() {
+void main() async {
+  // Ensure Flutter engine is initialized before any async calls
+  WidgetsFlutterBinding.ensureInitialized();
+
   runApp(const FocusPalApp());
 }
 
@@ -16,15 +18,13 @@ class FocusPalApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'FocusPal',
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: Colors.white,
-        textTheme: const TextTheme(
-          bodyMedium: TextStyle(fontSize: 16.0),
-        ),
+        useMaterial3: true,
       ),
-      home: const MainPage(), // Start at MainPage with nav bar
+      home: const MainPage(),
     );
   }
 }
@@ -39,12 +39,31 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
   int _focusMinutes = 25;
+  Player? player; // Nullable until loaded
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadPlayer();
+    });
+  }
+
+  Future<void> _loadPlayer() async {
+    try {
+      player = await Player.load();
+      setState(() {}); // Refresh UI after loading
+    } catch (e, stack) {
+      debugPrint("⚠️ _loadPlayer() failed: $e\n$stack");
+      setState(() {
+        player = Player(); // fallback
+      });
+    }
+  }
 
   void _onItemTapped(int index) async {
     if (index == 3) {
-      // Keep Settings tab highlighted
-      setState(() => _selectedIndex = 3);
-
+      // Settings tab
       final result = await Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => const SettingsScreen()),
@@ -53,13 +72,9 @@ class _MainPageState extends State<MainPage> {
       if (result != null && result is int) {
         setState(() => _focusMinutes = result);
         ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Focus time updated to $result minutes')),
+          SnackBar(content: Text('Focus time updated to $result minutes')),
         );
       }
-
-      setState(() {
-        _selectedIndex = 1;
-      });
     } else {
       setState(() {
         _selectedIndex = index;
@@ -67,18 +82,25 @@ class _MainPageState extends State<MainPage> {
     }
   }
 
-  List<Widget> get _screens => [
-        const HomeScreen(),
-        TimerScreen(focusMinutes: _focusMinutes),
-        const RewardsScreen(),
-      ];
+  List<Widget> get _screens {
+    if (player == null) return [];
+    return [
+      HomeScreen(onNavigate: _onItemTapped, player: player!),
+      TimerScreen(focusMinutes: _focusMinutes, player: player!),
+      RewardsScreen(player: player!),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (player == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
-      body: _selectedIndex == 3
-          ? _screens[1] // while in Settings, just show Timer under it
-          : _screens[_selectedIndex],
+      body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,

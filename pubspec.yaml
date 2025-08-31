@@ -85,13 +85,13 @@
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
-name: Focuspal
+name: focuspal
 description: A gamified focus app to help students manage screen time.
 
 publish_to: "none"
 
 environment:
-  sdk: ">=2.18.0 <3.0.0"
+  sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
   flutter:
