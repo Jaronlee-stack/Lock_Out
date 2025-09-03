@@ -98,3 +98,6 @@ dependencies:
     sdk: flutter
   shared_preferences: ^2.2.2
   cupertino_icons: ^1.0.2
+flutter:
+  assets:
+      - assets/images/

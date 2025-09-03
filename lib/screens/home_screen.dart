@@ -13,13 +13,13 @@ class HomeScreen extends StatelessWidget {
     double progress = player.xp / player.getXpForNextLevel();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('FocusPal - Home')),
+      appBar: AppBar(title: const Text('Home')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Level & XP display
+            // Level, XP, Coins
             Text(
               'Level: ${player.level}',
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -33,6 +33,8 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text('${player.xp}/${player.getXpForNextLevel()} XP'),
+            const SizedBox(height: 4),
+            Text('Coins: ${player.coins}', style: const TextStyle(fontSize: 16)),
 
             const SizedBox(height: 40),
 
@@ -48,8 +50,18 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             CustomButton(
-              label: 'Settings',
+              label: 'Shop',
               onPressed: () => onNavigate(3),
+            ),
+            const SizedBox(height: 10),
+            CustomButton(
+              label: 'Collection',
+              onPressed: () => onNavigate(4),
+            ),
+            const SizedBox(height: 10),
+            CustomButton(
+              label: 'Settings',
+              onPressed: () => onNavigate(5),
             ),
           ],
         ),

@@ -63,7 +63,7 @@ class RewardsScreen extends StatelessWidget {
     final allRewards = _generateRewards();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('FocusPal - Rewards')),
+      appBar: AppBar(title: const Text('Rewards')),
       body: Column(
         children: [
           Padding(

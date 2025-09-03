@@ -3,12 +3,12 @@ import 'screens/home_screen.dart';
 import 'screens/timer_screen.dart';
 import 'screens/rewards_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/shop_screen.dart';
+import 'screens/collection_screen.dart';
 import 'package:focuspal/models/player.dart';
 
 void main() async {
-  // Ensure Flutter engine is initialized before any async calls
   WidgetsFlutterBinding.ensureInitialized();
-
   runApp(const FocusPalApp());
 }
 
@@ -39,7 +39,7 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
   int _focusMinutes = 25;
-  Player? player; // Nullable until loaded
+  Player? player;
 
   @override
   void initState() {
@@ -52,17 +52,17 @@ class _MainPageState extends State<MainPage> {
   Future<void> _loadPlayer() async {
     try {
       player = await Player.load();
-      setState(() {}); // Refresh UI after loading
+      setState(() {});
     } catch (e, stack) {
-      debugPrint("⚠️ _loadPlayer() failed: $e\n$stack");
+      debugPrint("_loadPlayer() failed: $e\n$stack");
       setState(() {
-        player = Player(); // fallback
+        player = Player();
       });
     }
   }
 
   void _onItemTapped(int index) async {
-    if (index == 3) {
+    if (index == 5) {
       // Settings tab
       final result = await Navigator.push(
         context,
@@ -88,6 +88,8 @@ class _MainPageState extends State<MainPage> {
       HomeScreen(onNavigate: _onItemTapped, player: player!),
       TimerScreen(focusMinutes: _focusMinutes, player: player!),
       RewardsScreen(player: player!),
+      RewardsShop(player: player!),
+      CollectionScreen(player: player!,)
     ];
   }
 
@@ -109,6 +111,8 @@ class _MainPageState extends State<MainPage> {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.timer), label: 'Timer'),
           BottomNavigationBarItem(icon: Icon(Icons.star), label: 'Rewards'),
+          BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Shop'),
+          BottomNavigationBarItem(icon: Icon(Icons.shelves), label: 'Collection'),
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
         ],
       ),

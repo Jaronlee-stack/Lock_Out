@@ -4,9 +4,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 class Player {
   int xp = 0;
   int level = 1;
+  int coins = 0; // <-- Added coins
   List<String> unlockedRewards = [];
 
-  final Map<int, String> rewards = {
+  final Map<int, String> levelRewards = {
     1: 'Starter Pet',
     5: 'Accessories',
     10: 'Upgrade Pet',
@@ -15,21 +16,23 @@ class Player {
 
   Player();
 
-  /// Initialize Player from saved data
+  /// Load Player from SharedPreferences
   static Future<Player> load() async {
     try {
-    final prefs = await SharedPreferences.getInstance();
-    final player = Player();
-    player.level = prefs.getInt('level') ?? 1;
-    player.xp = prefs.getInt('xp') ?? 0;
-    player.unlockedRewards = prefs.getStringList('unlockedRewards') ?? [];
-    return player;
-  } catch (e, stack) {
-    debugPrint("⚠️ Player.load() failed: $e\n$stack");
-    return Player(); // fallback, so app still runs
+      final prefs = await SharedPreferences.getInstance();
+      final player = Player();
+      player.level = prefs.getInt('level') ?? 1;
+      player.xp = prefs.getInt('xp') ?? 0;
+      player.coins = prefs.getInt('coins') ?? 0;
+      player.unlockedRewards = prefs.getStringList('unlockedRewards') ?? [];
+      return player;
+    } catch (e, stack) {
+      debugPrint("Player.load() failed: $e\n$stack");
+      return Player();
+    }
   }
-}
 
+  /// Get XP needed for next level
   int getXpForNextLevel() {
     if (level < 5) return 50;
     if (level < 10) return 100;
@@ -37,38 +40,52 @@ class Player {
     return 150; // level 15+
   }
 
-  /// Adds XP, returns reward if level-up unlocks one
-  Future<List<String>> addXp(int amount) async {
-  xp += amount;
-  List<String> newRewards = [];
+  /// Add XP and coins (optional), return new rewards if level up
+  Future<List<String>> addXp(int amount, {int coinsEarned = 0}) async {
+    xp += amount;
+    coins += coinsEarned; // <-- Earn coins too
+    List<String> newRewards = [];
 
-  while (xp >= getXpForNextLevel()) {
-    xp -= getXpForNextLevel();
-    level++;
-    
-    String? reward;
-    if (rewards.containsKey(level)) {
-      reward = rewards[level];
-    } else if (level <= 20) {
-      reward = 'Pet Accessory Level $level';
+    while (xp >= getXpForNextLevel()) {
+      xp -= getXpForNextLevel();
+      level++;
+
+      String? reward;
+      if (levelRewards.containsKey(level)) {
+        reward = levelRewards[level];
+      } else if (level <= 20) {
+        reward = 'Pet Accessory Level $level';
+      }
+
+      if (reward != null) {
+        newRewards.add(reward);
+        unlockedRewards.add(reward);
+      }
     }
 
-    if (reward != null) {
-      newRewards.add(reward);
-      unlockedRewards.add(reward); // store it persistently
-    }
+    await save();
+    return newRewards;
   }
-  await save();
-  return newRewards;
-}
 
+  /// Spend coins for shop purchases
+  bool spendCoins(int amount) {
+    if (coins >= amount) {
+      coins -= amount;
+      save();
+      return true;
+    }
+    return false;
+  }
+
+  /// XP progress for progress bars
   double getXpProgress() => xp / getXpForNextLevel();
 
-  /// Save player data to SharedPreferences
+  /// Save all player data
   Future<void> save() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('level', level);
     await prefs.setInt('xp', xp);
+    await prefs.setInt('coins', coins); // <-- Save coins
     await prefs.setStringList('unlockedRewards', unlockedRewards);
   }
 }
