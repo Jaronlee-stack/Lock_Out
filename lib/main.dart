@@ -5,6 +5,7 @@ import 'screens/rewards_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/shop_screen.dart';
 import 'screens/collection_screen.dart';
+import 'screens/pet_screen.dart';
 import 'package:focuspal/models/player.dart';
 
 void main() async {
@@ -62,7 +63,7 @@ class _MainPageState extends State<MainPage> {
   }
 
   void _onItemTapped(int index) async {
-    if (index == 5) {
+    if (index == 6) {
       // Settings tab
       final result = await Navigator.push(
         context,
@@ -89,7 +90,8 @@ class _MainPageState extends State<MainPage> {
       TimerScreen(focusMinutes: _focusMinutes, player: player!),
       RewardsScreen(player: player!),
       RewardsShop(player: player!),
-      CollectionScreen(player: player!,)
+      CollectionScreen(player: player!,),
+      PetScreen(player: player!,)
     ];
   }
 
@@ -113,6 +115,7 @@ class _MainPageState extends State<MainPage> {
           BottomNavigationBarItem(icon: Icon(Icons.star), label: 'Rewards'),
           BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Shop'),
           BottomNavigationBarItem(icon: Icon(Icons.shelves), label: 'Collection'),
+          BottomNavigationBarItem(icon: Icon(Icons.pets), label: 'Pets'),
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
         ],
       ),

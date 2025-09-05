@@ -60,8 +60,13 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             CustomButton(
-              label: 'Settings',
+              label: 'View your pet',
               onPressed: () => onNavigate(5),
+            ),
+            const SizedBox(height: 10),
+            CustomButton(
+              label: 'Settings',
+              onPressed: () => onNavigate(6),
             ),
           ],
         ),
