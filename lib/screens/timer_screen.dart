@@ -171,141 +171,133 @@ class _TimerScreenState extends State<TimerScreen>
   }
 
   @override
-  Widget build(BuildContext context) {
+    Widget build(BuildContext context) {
     super.build(context);
     final totalSeconds = widget.focusMinutes * 60;
     final progress = 1 - (_remainingSeconds / totalSeconds);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Timer')),
-      body: BackgroundWrapper(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Circular Timer
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  SizedBox(
-                    width: 200,
-                    height: 200,
-                    child: CircularProgressIndicator(
-                      value: progress,
-                      strokeWidth: 12,
-                      backgroundColor: Colors.grey[300],
-                      color: Colors.blueAccent,
-                    ),
+   return BackgroundWrapper(
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+          // Circular Timer
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  width: 200,
+                  height: 200,
+                  child: CircularProgressIndicator(
+                    value: progress,
+                    strokeWidth: 12,
+                    backgroundColor: Colors.grey[300],
+                    color: Colors.blueAccent,
                   ),
-                  Text(
-                    _formatTime(_remainingSeconds),
-                    style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
+                ),
+                Text(
+                  _formatTime(_remainingSeconds),
+                 style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+               ),
+             ],
+           ),
+           const SizedBox(height: 20),
 
-              // XP Progress Bar
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  Container(
-                    width: 250,
-                    height: 20,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.black),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: FractionallySizedBox(
-                      alignment: Alignment.centerLeft,
-                      widthFactor: widget.player.getXpProgress(),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.blue,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+           // XP Progress Bar
+           Stack(
+              alignment: Alignment.center,
+              children: [
+                Container(
+                  width: 250,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.black),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: FractionallySizedBox(
+                    alignment: Alignment.centerLeft,
+                    widthFactor: widget.player.getXpProgress(),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                   ),
-                  FadeTransition(
-                    opacity: _levelUpController,
-                    child: const Text(
-                      "Level Up!",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.orange,
-                        fontSize: 18,
-                      ),
+                ),
+                FadeTransition(
+                  opacity: _levelUpController,
+                  child: const Text(
+                    "Level Up!",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.orange,
+                      fontSize: 18,
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Text(
-                "Lvl: ${widget.player.level} | XP: ${widget.player.xp}/${widget.player.getXpForNextLevel()} | Coins: ${widget.player.coins}",
-                style: const TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 30),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text(
+              "Lvl: ${widget.player.level} | XP: ${widget.player.xp}/${widget.player.getXpForNextLevel()} | Coins: ${widget.player.coins}",
+              style: const TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 30),
 
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ElevatedButton(
-                        onPressed: _isRunning ? null : _startTimer,
-                        child: const Text("Start"),
-                      ),
-                      const SizedBox(width: 15),
-                     ElevatedButton(
-                       onPressed: _isRunning ? _pauseTimer : null,
-                        child: const Text("Pause"),
-                      ),
-                     const SizedBox(width: 15),
-                     ElevatedButton(
-                       onPressed: _resetTimer,
-                       child: const Text("Reset"),
-                     ),
-                   ],
-                 ),
-
-              const SizedBox(height: 20),
-            
-              Center(
-                  child: ElevatedButton(
-                    onPressed: () async {
-                     final newRewards = await widget.player.addXp(10);
-                       setState(() {
-                          widget.player.coins += 10;
-                        });
-                        await widget.player.save();
-                        if (newRewards.isNotEmpty) {
-                          for (var reward in newRewards) {
-                           ScaffoldMessenger.of(context)
-                             ..hideCurrentSnackBar()
-                             ..showSnackBar(
-                               SnackBar(content: Text("Unlocked: $reward"), duration: Duration(seconds: 1)),
-                              );
-                         }
-                       } else {
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      onPressed: _isRunning ? null : _startTimer,
+                      child: const Text("Start"),
+                    ),
+                    const SizedBox(width: 15),
+                    ElevatedButton(
+                      onPressed: _isRunning ? _pauseTimer : null,
+                      child: const Text("Pause"),
+                    ),
+                    const SizedBox(width: 15),
+                    ElevatedButton(
+                      onPressed: _resetTimer,
+                      child: const Text("Reset"),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () async {
+                    final newRewards = await widget.player.addXp(10);
+                    setState(() {
+                      widget.player.coins += 10;
+                    });
+                    await widget.player.save();
+                    if (newRewards.isNotEmpty) {
+                      for (var reward in newRewards) {
                         ScaffoldMessenger.of(context)
-                         ..hideCurrentSnackBar()
+                          ..hideCurrentSnackBar()
                           ..showSnackBar(
-                           const SnackBar(content: Text("Added 10 XP & 10 Coins!"), duration: Duration(seconds: 1)),
-                         );
-                       }
-                     },
-                     child: const Text("DEBUG: Add XP & Coins"),
+                            SnackBar(content: Text("Unlocked: $reward"), duration: Duration(seconds: 1)),
+                          );
+                      }
+                    } else {
+                         ScaffoldMessenger.of(context)
+                        ..hideCurrentSnackBar()
+                        ..showSnackBar(
+                          const SnackBar(content: Text("Added 10 XP & 10 Coins!"), duration: Duration(seconds: 1)),
+                        );
+                     }
+                   },
+                  child: const Text("DEBUG: Add XP & Coins"),
                    ),
-                 ),
-               ],
-             ),
-
-            ],
-          ),
+              ],
+            ),
+          ],
         ),
       ),
-    );
+       );
+   }
   }
-}

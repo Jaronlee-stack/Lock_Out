@@ -11,12 +11,12 @@ const Map<String, Map<String, dynamic>> rewardImageMap = {
     "width": 60.0,
     "height": 60.0,
   },
-  "Golden Collar": {
+  "Black Tie": {
     "image": "assets/images/collar.png",
-    "left": 30.0,
-    "top": 115.0,
-    "width": 200,
-    "height": 90.0,
+    "left": 85.0,
+    "top": 165.0,
+    "width": 50.0,
+    "height": 50.0,
   },
   "Magic Potion": {
     "image": "assets/images/potion.png",
@@ -79,7 +79,7 @@ class _PetScreenState extends State<PetScreen> with TickerProviderStateMixin {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        const SnackBar(content: Text("Your pet bounced happily! 🐾"), duration: Duration(seconds: 1)),
+        const SnackBar(content: Text("Your pet bounced happily!"), duration: Duration(seconds: 1)),
       );
   }
 
@@ -95,47 +95,41 @@ class _PetScreenState extends State<PetScreen> with TickerProviderStateMixin {
 
     final baseScale = getPetScale(widget.player.level);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("My Pet"),
-        centerTitle: true,
-      ),
-      body: BackgroundWrapper(
-        child: SizedBox.expand(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SlideTransition(
-                position: _bounceAnimation,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    AnimatedPet(
-                      petImagePath: petBase,
-                      accessories: accessories,
-                      showRainbowAura: hasRainbowAura,
-                      scale: baseScale,
-                    ),
-                  ],
-                ),
+    return BackgroundWrapper(
+      child: SizedBox.expand(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SlideTransition(
+              position: _bounceAnimation,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  AnimatedPet(
+                    petImagePath: petBase,
+                    accessories: accessories,
+                    showRainbowAura: hasRainbowAura,
+                    scale: baseScale,
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
-              Text(
-                "Level: ${widget.player.level}  |  Coins: ${widget.player.coins}",
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              "Level: ${widget.player.level}  |  Coins: ${widget.player.coins}",
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: _bouncePet,
+              icon: const Icon(Icons.play_arrow),
+              label: const Text("Pet!"),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                textStyle: const TextStyle(fontSize: 16),
               ),
-              const SizedBox(height: 20),
-              ElevatedButton.icon(
-                onPressed: _bouncePet,
-                icon: const Icon(Icons.play_arrow),
-                label: const Text("Bounce!"),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  textStyle: const TextStyle(fontSize: 16),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

@@ -13,13 +13,12 @@ class RewardsShop extends StatefulWidget {
 class _RewardsShopState extends State<RewardsShop> {
   late Player player;
 
-  // Shop items with prices
   final List<Map<String, dynamic>> shopItems = [
     {'name': 'Cool Hat', 'price': 1, 'icon': "assets/images/hat.png"},
-    {'name': 'Golden Collar', 'price': 10, 'icon': "assets/images/collar.png"},
+    {'name': 'Black Tie', 'price': 10, 'icon': "assets/images/collar.png"},
     {'name': 'Magic Potion', 'price': 15, 'icon': "assets/images/potion.png"},
     {'name': 'Rainbow Fur', 'price': 20, 'icon': "assets/images/rainbow.png"}
-  ]; 
+  ];
 
   @override
   void initState() {
@@ -27,7 +26,6 @@ class _RewardsShopState extends State<RewardsShop> {
     player = widget.player;
   }
 
-  /// Handle item purchase
   void _buyItem(String itemName, int price) async {
     if (player.spendCoins(price)) {
       setState(() {
@@ -37,63 +35,54 @@ class _RewardsShopState extends State<RewardsShop> {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
-        SnackBar(content: Text("Purchased $itemName!"),
-                 duration: Duration(seconds: 1),),
-      );
+          SnackBar(content: Text("Purchased $itemName!"), duration: Duration(seconds: 1)),
+        );
     } else {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
-        const SnackBar(content: Text("Not enough coins!"),
-                       duration: Duration(seconds: 1)),
-      );
+          const SnackBar(content: Text("Not enough coins!"), duration: Duration(seconds: 1)),
+        );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-       title: const Text("Rewards Shop"),
-        centerTitle: true,
-      ),
-      body: BackgroundWrapper(
-        child: Column(
-          children: [
-           const SizedBox(height: 20),
-           Text(
-             "Coins: ${player.coins}",
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+    return BackgroundWrapper(
+      child: Column(
+        children: [
+          const SizedBox(height: 20),
+          Text(
+            "Coins: ${player.coins}",
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 20),
+          Expanded(
+            child: ListView(
+              children: shopItems.map((item) {
+                final itemName = item['name'];
+                final price = item['price'];
+                final alreadyOwned = player.unlockedRewards.contains(itemName);
+
+                return Card(
+                  margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                  child: ListTile(
+                    leading: Image.asset(item['icon'], width: 40, height: 40),
+                    title: Text(itemName),
+                    subtitle: Text("Price: $price coins"),
+                    trailing: alreadyOwned
+                        ? const Icon(Icons.check, color: Colors.green)
+                        : ElevatedButton(
+                            onPressed: () => _buyItem(itemName, price),
+                            child: const Text("Buy"),
+                          ),
+                  ),
+                );
+              }).toList(),
             ),
-           const SizedBox(height: 20),
-           Expanded(
-              child: ListView(
-               children: shopItems.map((item) {
-                  final itemName = item['name'];
-                 final price = item['price'];
-                 final alreadyOwned = player.unlockedRewards.contains(itemName);
-
-                 return Card(
-                   margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                   child: ListTile(
-                     leading: Image.asset(item['icon'], width: 40, height: 40),
-                     title: Text(itemName),
-                     subtitle: Text("Price: $price coins"),
-                     trailing: alreadyOwned
-                         ? const Icon(Icons.check, color: Colors.green)
-                         : ElevatedButton(
-                             onPressed: () => _buyItem(itemName, price),
-                             child: const Text("Buy"),
-                            ),
-                    ),
-                 );
-               }).toList(),
-             ),
-           ),
-         ],
-       ),
-     ),
+          ),
+        ],
+      ),
     );
-
   }
 }

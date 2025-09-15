@@ -62,37 +62,59 @@ class _MainPageState extends State<MainPage> {
     }
   }
 
-  void _onItemTapped(int index) async {
-    if (index == 5) {
-      final result = await Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const SettingsScreen()),
-      );
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
 
-      if (result != null && result is int) {
-        setState(() => _focusMinutes = result);
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-          SnackBar(content: Text('Focus time updated to $result minutes'),
-                  duration: Duration(seconds: 1)),
+  Future<void> _openSettings() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const SettingsScreen()),
+    );
+
+    if (result != null && result is int) {
+      setState(() => _focusMinutes = result);
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text('Focus time updated to $result minutes'),
+            duration: const Duration(seconds: 1),
+          ),
         );
-      }
-    } else {
-      setState(() {
-        _selectedIndex = index;
-      });
     }
   }
 
   List<Widget> get _screens {
     if (player == null) return [];
     return [
-      TimerScreen(focusMinutes: _focusMinutes, player: player!),
-      RewardsScreen(player: player!),
-      RewardsShop(player: player!),
-      CollectionScreen(player: player!,),
-      PetScreen(player: player!,)
+      ScreenWrapper(
+        title: 'Timer',
+        onSettingsPressed: _openSettings,
+        child: TimerScreen(focusMinutes: _focusMinutes, player: player!),
+      ),
+      ScreenWrapper(
+        title: 'Rewards',
+        onSettingsPressed: _openSettings,
+        child: RewardsScreen(player: player!),
+      ),
+      ScreenWrapper(
+        title: 'Shop',
+        onSettingsPressed: _openSettings,
+        child: RewardsShop(player: player!),
+      ),
+      ScreenWrapper(
+        title: 'Collection',
+        onSettingsPressed: _openSettings,
+        child: CollectionScreen(player: player!),
+      ),
+      ScreenWrapper(
+        title: 'Pets',
+        onSettingsPressed: _openSettings,
+        child: PetScreen(player: player!),
+      ),
     ];
   }
 
@@ -105,9 +127,7 @@ class _MainPageState extends State<MainPage> {
     }
 
     return Scaffold(
-      body: BackgroundWrapper(
-      child: _screens[_selectedIndex],
-      ),
+      body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
@@ -118,9 +138,38 @@ class _MainPageState extends State<MainPage> {
           BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Shop'),
           BottomNavigationBarItem(icon: Icon(Icons.shelves), label: 'Collection'),
           BottomNavigationBarItem(icon: Icon(Icons.pets), label: 'Pets'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
         ],
       ),
+    );
+  }
+}
+
+class ScreenWrapper extends StatelessWidget {
+  final String title;
+  final Widget child;
+  final VoidCallback onSettingsPressed;
+
+  const ScreenWrapper({
+    super.key,
+    required this.title,
+    required this.child,
+    required this.onSettingsPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: onSettingsPressed,
+          ),
+        ],
+      ),
+      body: BackgroundWrapper(child: child),
     );
   }
 }

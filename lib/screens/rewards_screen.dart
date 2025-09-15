@@ -62,49 +62,45 @@ class RewardsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final allRewards = _generateRewards();
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Rewards')),
-      body: BackgroundWrapper(
-        child: Column(
-         children: [
-           Padding(
-             padding: const EdgeInsets.all(16.0),
-             child: Text(
-               "Level: ${player.level} | XP: ${player.xp}/${player.getXpForNextLevel()}",
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-             ),
-           ),
-           Expanded(
-             child: ListView.builder(
-               itemCount: allRewards.length,
-               itemBuilder: (context, index) {
-                 final reward = allRewards[index];
-                 final unlocked = player.level >= reward.requiredLevel;
+    return BackgroundWrapper(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              "Level: ${player.level} | XP: ${player.xp}/${player.getXpForNextLevel()}",
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: allRewards.length,
+              itemBuilder: (context, index) {
+                final reward = allRewards[index];
+                final unlocked = player.level >= reward.requiredLevel;
 
-                 return ListTile(
-                   title: Text(
-                     reward.name,
-                     style: TextStyle(
-                       color: unlocked ? Colors.black : Colors.grey,
-                       fontWeight: unlocked ? FontWeight.bold : FontWeight.normal,
-                     ),
-                   ),
-                    subtitle: Text(
-                     "Level ${reward.requiredLevel} | ${reward.points} XP",
-                     style: TextStyle(color: unlocked ? Colors.black : Colors.grey),
-                   ),
-                   leading: Icon(
-                     reward.isAccessory ? Icons.pets : Icons.card_giftcard,
-                     color: unlocked ? Colors.blue : Colors.grey,
-                   ),
-                 );
-               },
-             ),
-           ),
-         ],
-       ),
-     ),
+                return ListTile(
+                  title: Text(
+                    reward.name,
+                    style: TextStyle(
+                      color: unlocked ? Colors.black : Colors.grey,
+                      fontWeight: unlocked ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                  subtitle: Text(
+                    "Level ${reward.requiredLevel} | ${reward.points} XP",
+                    style: TextStyle(color: unlocked ? Colors.black : Colors.grey),
+                  ),
+                  leading: Icon(
+                    reward.isAccessory ? Icons.pets : Icons.card_giftcard,
+                    color: unlocked ? Colors.blue : Colors.grey,
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
-
   }
 }
