@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:focuspal/models/player.dart';
+import 'package:focuspal/widgets/background.dart';
 
 class RewardsShop extends StatefulWidget {
   final Player player;
@@ -33,12 +34,18 @@ class _RewardsShopState extends State<RewardsShop> {
         player.unlockedRewards.add(itemName);
       });
       await player.save();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Purchased $itemName!")),
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+        SnackBar(content: Text("Purchased $itemName!"),
+                 duration: Duration(seconds: 1),),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Not enough coins!")),
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+        const SnackBar(content: Text("Not enough coins!"),
+                       duration: Duration(seconds: 1)),
       );
     }
   }
@@ -47,45 +54,46 @@ class _RewardsShopState extends State<RewardsShop> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Rewards Shop"),
+       title: const Text("Rewards Shop"),
         centerTitle: true,
       ),
-      body: Column(
-        children: [
-          const SizedBox(height: 20),
-          Text(
-            "Coins: ${player.coins}",
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 20),
-
-          Expanded(
-            child: ListView(
-              children: shopItems.map((item) {
-                final itemName = item['name'];
-                final price = item['price'];
-                final alreadyOwned = player.unlockedRewards.contains(itemName);
-
-                return Card(
-                  margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                  child: ListTile(
-                    leading: Image.asset(item['icon'], width: 40, height: 40),
-                    title: Text(itemName),
-                    subtitle: Text("Price: $price coins"),
-                    trailing: alreadyOwned
-                        ? const Icon(Icons.check, color: Colors.green)
-                        : ElevatedButton(
-                            onPressed: () => _buyItem(itemName, price),
-                            child: const Text("Buy"),
-                          ),
-                  ),
-                );
-              }).toList(),
+      body: BackgroundWrapper(
+        child: Column(
+          children: [
+           const SizedBox(height: 20),
+           Text(
+             "Coins: ${player.coins}",
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
-          ),
+           const SizedBox(height: 20),
+           Expanded(
+              child: ListView(
+               children: shopItems.map((item) {
+                  final itemName = item['name'];
+                 final price = item['price'];
+                 final alreadyOwned = player.unlockedRewards.contains(itemName);
 
-        ],
-      ),
+                 return Card(
+                   margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                   child: ListTile(
+                     leading: Image.asset(item['icon'], width: 40, height: 40),
+                     title: Text(itemName),
+                     subtitle: Text("Price: $price coins"),
+                     trailing: alreadyOwned
+                         ? const Icon(Icons.check, color: Colors.green)
+                         : ElevatedButton(
+                             onPressed: () => _buyItem(itemName, price),
+                             child: const Text("Buy"),
+                            ),
+                    ),
+                 );
+               }).toList(),
+             ),
+           ),
+         ],
+       ),
+     ),
     );
+
   }
 }

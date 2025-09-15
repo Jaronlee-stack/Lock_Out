@@ -1,13 +1,18 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 
 class AnimatedPet extends StatefulWidget {
   final String petImagePath;
-  final List<Map<String, dynamic>> accessories; // Now accepts positions too!
+  final List<Map<String, dynamic>> accessories;
+  final bool showRainbowAura;
+  final double scale;
 
   const AnimatedPet({
     super.key,
     required this.petImagePath,
     this.accessories = const [],
+    this.showRainbowAura = false,
+    this.scale = 1.0,
   });
 
   @override
@@ -18,14 +23,17 @@ class _AnimatedPetState extends State<AnimatedPet>
     with TickerProviderStateMixin {
   late AnimationController _bounceController;
   late AnimationController _tapController;
+  late AnimationController _auraController;
+
   late Animation<double> _bounceAnimation;
   late Animation<double> _tapAnimation;
+  late Animation<double> _auraRotation;
 
   @override
   void initState() {
     super.initState();
 
-    // Bounce controller (looping)
+    // Bounce animation
     _bounceController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
@@ -35,7 +43,6 @@ class _AnimatedPetState extends State<AnimatedPet>
       CurvedAnimation(parent: _bounceController, curve: Curves.easeInOut),
     );
 
-    // Tap controller (plays once)
     _tapController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
@@ -50,12 +57,21 @@ class _AnimatedPetState extends State<AnimatedPet>
         _tapController.reverse();
       }
     });
+
+    // Aura rotation animation
+    _auraController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 6),
+    )..repeat();
+
+    _auraRotation = Tween<double>(begin: 0, end: 2 * pi).animate(_auraController);
   }
 
   @override
   void dispose() {
     _bounceController.dispose();
     _tapController.dispose();
+    _auraController.dispose();
     super.dispose();
   }
 
@@ -67,39 +83,45 @@ class _AnimatedPetState extends State<AnimatedPet>
 
   @override
   Widget build(BuildContext context) {
+    final combinedScale = _tapAnimation.value * widget.scale;
+
     return GestureDetector(
       onTap: _onTap,
       child: AnimatedBuilder(
-        animation: Listenable.merge([_bounceController, _tapController]),
+        animation: Listenable.merge([_bounceController, _tapController, _auraController]),
         builder: (context, child) {
           return Transform.translate(
             offset: Offset(0, _bounceAnimation.value),
             child: Transform.scale(
-              scale: _tapAnimation.value,
+              scale: combinedScale,
               child: SizedBox(
-                width: 250,
-                height: 250,
+                width: 240 * widget.scale,
+                height: 240 * widget.scale,
                 child: Stack(
                   alignment: Alignment.center,
+                  clipBehavior: Clip.none,
                   children: [
-                    // Pet Image
+                    if (widget.showRainbowAura)
+                      SizedBox(
+                        width: 240 * widget.scale,
+                        height: 240 * widget.scale,
+                        child: CustomPaint(
+                          painter: RainbowAuraPainter(angle: _auraRotation.value),
+                        ),
+                      ),
                     Image.asset(
                       widget.petImagePath,
-                      width: 200,
-                      height: 200,
-                      fit: BoxFit.contain,
+                      width: 200 * widget.scale,
+                      height: 200 * widget.scale,
                     ),
-
-                    // Accessories with adjustable positions
                     for (var accessory in widget.accessories)
                       Positioned(
-                        left: accessory['left'] ?? 0.0,
-                        top: accessory['top'] ?? 0.0,
+                        left: (accessory['left'] as double) * widget.scale,
+                        top: (accessory['top'] as double) * widget.scale,
                         child: Image.asset(
                           accessory['image'],
-                          width: accessory['width'] ?? 50,
-                          height: accessory['height'] ?? 50,
-                          fit: BoxFit.contain,
+                          width: (accessory['width'] as double) * widget.scale,
+                          height: (accessory['height'] as double) * widget.scale,
                         ),
                       ),
                   ],
@@ -110,5 +132,42 @@ class _AnimatedPetState extends State<AnimatedPet>
         },
       ),
     );
+  }
+}
+
+class RainbowAuraPainter extends CustomPainter {
+  final double angle;
+
+  RainbowAuraPainter({required this.angle});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final radius = size.width / 2;
+    final rect = Rect.fromCircle(center: Offset(radius, radius), radius: radius);
+
+    final paint = Paint()
+      ..shader = SweepGradient(
+        startAngle: 0,
+        endAngle: 2 * pi,
+        colors: [
+          const Color.fromARGB(255, 253, 70, 57),
+          const Color.fromARGB(255, 255, 168, 37),
+          Colors.yellow,
+          Colors.green,
+          Colors.blue,
+          Colors.purple,
+          Colors.red,
+        ],
+        transform: GradientRotation(angle),
+      ).createShader(rect)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 12;
+
+    canvas.drawCircle(Offset(radius, radius), radius - 6, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant RainbowAuraPainter oldDelegate) {
+    return oldDelegate.angle != angle;
   }
 }

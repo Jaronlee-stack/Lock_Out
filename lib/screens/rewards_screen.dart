@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:focuspal/models/player.dart';
+import 'package:focuspal/widgets/background.dart';
 
 class Reward {
   final String name;
   final int points; // XP required to unlock
   final int requiredLevel;
-  final bool isAccessory; // True if it’s a generated accessory
+  final bool isAccessory;
 
   Reward({
     required this.name,
@@ -23,11 +24,10 @@ class RewardsScreen extends StatelessWidget {
   List<Reward> _generateRewards() {
     List<Reward> rewardsList = [];
 
-    // Base rewards at specific levels
     final baseRewards = {
       1: 'Starter Pet',
       5: 'Accessory Pack',
-      10: 'Upgrade Pet',
+      10: 'More Shop Items',
       15: 'Accessory Pack',
     };
 
@@ -36,7 +36,7 @@ class RewardsScreen extends StatelessWidget {
       if (baseRewards.containsKey(level)) {
         name = baseRewards[level]!;
       } else {
-        name = 'Pet Accessory Level $level';
+        name = 'Pet Upgrade Level $level';
       }
 
       // Calculate points: total XP required to reach this level
@@ -64,44 +64,47 @@ class RewardsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Rewards')),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              "Level: ${player.level} | XP: ${player.xp}/${player.getXpForNextLevel()}",
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: allRewards.length,
-              itemBuilder: (context, index) {
-                final reward = allRewards[index];
-                final unlocked = player.level >= reward.requiredLevel;
+      body: BackgroundWrapper(
+        child: Column(
+         children: [
+           Padding(
+             padding: const EdgeInsets.all(16.0),
+             child: Text(
+               "Level: ${player.level} | XP: ${player.xp}/${player.getXpForNextLevel()}",
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+             ),
+           ),
+           Expanded(
+             child: ListView.builder(
+               itemCount: allRewards.length,
+               itemBuilder: (context, index) {
+                 final reward = allRewards[index];
+                 final unlocked = player.level >= reward.requiredLevel;
 
-                return ListTile(
-                  title: Text(
-                    reward.name,
-                    style: TextStyle(
-                      color: unlocked ? Colors.black : Colors.grey,
-                      fontWeight: unlocked ? FontWeight.bold : FontWeight.normal,
-                    ),
-                  ),
-                  subtitle: Text(
-                    "Level ${reward.requiredLevel} | ${reward.points} XP",
-                    style: TextStyle(color: unlocked ? Colors.black : Colors.grey),
-                  ),
-                  leading: Icon(
-                    reward.isAccessory ? Icons.pets : Icons.card_giftcard,
-                    color: unlocked ? Colors.blue : Colors.grey,
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
+                 return ListTile(
+                   title: Text(
+                     reward.name,
+                     style: TextStyle(
+                       color: unlocked ? Colors.black : Colors.grey,
+                       fontWeight: unlocked ? FontWeight.bold : FontWeight.normal,
+                     ),
+                   ),
+                    subtitle: Text(
+                     "Level ${reward.requiredLevel} | ${reward.points} XP",
+                     style: TextStyle(color: unlocked ? Colors.black : Colors.grey),
+                   ),
+                   leading: Icon(
+                     reward.isAccessory ? Icons.pets : Icons.card_giftcard,
+                     color: unlocked ? Colors.blue : Colors.grey,
+                   ),
+                 );
+               },
+             ),
+           ),
+         ],
+       ),
+     ),
     );
+
   }
 }

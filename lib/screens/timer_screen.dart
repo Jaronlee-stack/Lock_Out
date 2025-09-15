@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:focuspal/models/player.dart';
+import 'package:focuspal/widgets/timer_background.dart';
 
 class TimerScreen extends StatefulWidget {
   final int focusMinutes;
@@ -67,16 +68,16 @@ class _TimerScreenState extends State<TimerScreen>
   Future<void> _loadTimerState() async {
     final prefs = await SharedPreferences.getInstance();
     final savedSeconds = prefs.getInt('remainingSeconds');
-    if (savedSeconds != null) {
-      setState(() {
-        _remainingSeconds = savedSeconds;
-        _isRunning = false; // Resume in paused state
-      });
-    } else {
-      setState(() {
-        _remainingSeconds = widget.focusMinutes * 60;
-      });
-    }
+    setState(() {
+      _remainingSeconds = savedSeconds ?? widget.focusMinutes * 60;
+      _isRunning = false;
+    });
+  }
+
+  Future<void> _updateTotalFocusTime(int seconds) async {
+    final prefs = await SharedPreferences.getInstance();
+    final current = prefs.getInt('totalFocusSeconds') ?? 0;
+    await prefs.setInt('totalFocusSeconds', current + seconds);
   }
 
   void _startTimer() {
@@ -90,7 +91,8 @@ class _TimerScreenState extends State<TimerScreen>
           _elapsedSeconds++;
         });
 
-        // Earn XP and coins every minute
+        _updateTotalFocusTime(1); // <-- Track time
+
         if (_elapsedSeconds % 60 == 0) {
           (() async {
             final newRewards = await widget.player.addXp(1);
@@ -99,9 +101,12 @@ class _TimerScreenState extends State<TimerScreen>
             if (newRewards.isNotEmpty) {
               _levelUpController.forward(from: 0.0);
               for (var reward in newRewards) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("🎉 Level ${widget.player.level}! Reward: $reward")),
-                );
+                ScaffoldMessenger.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(
+                    SnackBar(content: Text("🎉 Level ${widget.player.level}! Reward: $reward"),
+                            duration: Duration(seconds: 1)),
+                  );
               }
             }
           })();
@@ -173,118 +178,132 @@ class _TimerScreenState extends State<TimerScreen>
 
     return Scaffold(
       appBar: AppBar(title: const Text('Timer')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Circular Timer
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                SizedBox(
-                  width: 200,
-                  height: 200,
-                  child: CircularProgressIndicator(
-                    value: progress,
-                    strokeWidth: 12,
-                    backgroundColor: Colors.grey[300],
-                    color: Colors.blueAccent,
+      body: BackgroundWrapper(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Circular Timer
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  SizedBox(
+                    width: 200,
+                    height: 200,
+                    child: CircularProgressIndicator(
+                      value: progress,
+                      strokeWidth: 12,
+                      backgroundColor: Colors.grey[300],
+                      color: Colors.blueAccent,
+                    ),
                   ),
-                ),
-                Text(
-                  _formatTime(_remainingSeconds),
-                  style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
+                  Text(
+                    _formatTime(_remainingSeconds),
+                    style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
 
-            // XP Progress Bar
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                Container(
-                  width: 250,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.black),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: FractionallySizedBox(
-                    alignment: Alignment.centerLeft,
-                    widthFactor: widget.player.getXpProgress(),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.blue,
-                        borderRadius: BorderRadius.circular(10),
+              // XP Progress Bar
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    width: 250,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.black),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: FractionallySizedBox(
+                      alignment: Alignment.centerLeft,
+                      widthFactor: widget.player.getXpProgress(),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.blue,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                     ),
                   ),
-                ),
-                FadeTransition(
-                  opacity: _levelUpController,
-                  child: const Text(
-                    "Level Up!",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.orange,
-                      fontSize: 18,
+                  FadeTransition(
+                    opacity: _levelUpController,
+                    child: const Text(
+                      "Level Up!",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange,
+                        fontSize: 18,
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Text(
-              "Lvl: ${widget.player.level} | XP: ${widget.player.xp}/${widget.player.getXpForNextLevel()} | Coins: ${widget.player.coins}",
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 30),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(
+                "Lvl: ${widget.player.level} | XP: ${widget.player.xp}/${widget.player.getXpForNextLevel()} | Coins: ${widget.player.coins}",
+                style: const TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 30),
 
-            // Timer Controls
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton(
-                  onPressed: _isRunning ? null : _startTimer,
-                  child: const Text("Start"),
-                ),
-                const SizedBox(width: 15),
-                ElevatedButton(
-                  onPressed: _isRunning ? _pauseTimer : null,
-                  child: const Text("Pause"),
-                ),
-                const SizedBox(width: 15),
-                ElevatedButton(
-                  onPressed: _resetTimer,
-                  child: const Text("Reset"),
-                ),
-                const SizedBox(width: 15),
-                //Debug: Adds Xp and Coins
-                ElevatedButton(
-                  onPressed: () async {
-                    final newRewards = await widget.player.addXp(10);
-                    setState(() {
-                      widget.player.coins += 10;
-                    });
-                    await widget.player.save();
-                    if (newRewards.isNotEmpty) {
-                      for (var reward in newRewards) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Unlocked: $reward")),
-                        );
-                      }
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Added 10 XP & 10 Coins!")),
-                      );
-                    }
-                  },
-                  child: const Text("DEBUG: Add XP & Coins"),
-                )
-              ],
-            ),
-          ],
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                        onPressed: _isRunning ? null : _startTimer,
+                        child: const Text("Start"),
+                      ),
+                      const SizedBox(width: 15),
+                     ElevatedButton(
+                       onPressed: _isRunning ? _pauseTimer : null,
+                        child: const Text("Pause"),
+                      ),
+                     const SizedBox(width: 15),
+                     ElevatedButton(
+                       onPressed: _resetTimer,
+                       child: const Text("Reset"),
+                     ),
+                   ],
+                 ),
+
+              const SizedBox(height: 20),
+            
+              Center(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                     final newRewards = await widget.player.addXp(10);
+                       setState(() {
+                          widget.player.coins += 10;
+                        });
+                        await widget.player.save();
+                        if (newRewards.isNotEmpty) {
+                          for (var reward in newRewards) {
+                           ScaffoldMessenger.of(context)
+                             ..hideCurrentSnackBar()
+                             ..showSnackBar(
+                               SnackBar(content: Text("Unlocked: $reward"), duration: Duration(seconds: 1)),
+                              );
+                         }
+                       } else {
+                        ScaffoldMessenger.of(context)
+                         ..hideCurrentSnackBar()
+                          ..showSnackBar(
+                           const SnackBar(content: Text("Added 10 XP & 10 Coins!"), duration: Duration(seconds: 1)),
+                         );
+                       }
+                     },
+                     child: const Text("DEBUG: Add XP & Coins"),
+                   ),
+                 ),
+               ],
+             ),
+
+            ],
+          ),
         ),
       ),
     );

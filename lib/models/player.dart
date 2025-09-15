@@ -4,13 +4,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 class Player {
   int xp = 0;
   int level = 1;
-  int coins = 0; // <-- Added coins
+  int coins = 0;
   List<String> unlockedRewards = [];
+  DateTime? lastSession; // <-- New field
 
   final Map<int, String> levelRewards = {
     1: 'Starter Pet',
     5: 'Accessories',
-    10: 'Upgrade Pet',
+    10: 'More Shop Items',
     15: 'Accessories',
   };
 
@@ -25,6 +26,12 @@ class Player {
       player.xp = prefs.getInt('xp') ?? 0;
       player.coins = prefs.getInt('coins') ?? 0;
       player.unlockedRewards = prefs.getStringList('unlockedRewards') ?? [];
+
+      final lastSessionStr = prefs.getString('lastSession');
+      if (lastSessionStr != null) {
+        player.lastSession = DateTime.tryParse(lastSessionStr);
+      }
+
       return player;
     } catch (e, stack) {
       debugPrint("Player.load() failed: $e\n$stack");
@@ -43,7 +50,7 @@ class Player {
   /// Add XP and coins (optional), return new rewards if level up
   Future<List<String>> addXp(int amount, {int coinsEarned = 0}) async {
     xp += amount;
-    coins += coinsEarned; // <-- Earn coins too
+    coins += coinsEarned;
     List<String> newRewards = [];
 
     while (xp >= getXpForNextLevel()) {
@@ -54,7 +61,7 @@ class Player {
       if (levelRewards.containsKey(level)) {
         reward = levelRewards[level];
       } else if (level <= 20) {
-        reward = 'Pet Accessory Level $level';
+        reward = 'Pet Upgrade Level $level';
       }
 
       if (reward != null) {
@@ -67,7 +74,7 @@ class Player {
     return newRewards;
   }
 
-  /// Spend coins for shop purchases
+  /// Spend coins
   bool spendCoins(int amount) {
     if (coins >= amount) {
       coins -= amount;
@@ -77,7 +84,7 @@ class Player {
     return false;
   }
 
-  /// XP progress for progress bars
+  /// XP progress
   double getXpProgress() => xp / getXpForNextLevel();
 
   /// Save all player data
@@ -85,7 +92,14 @@ class Player {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('level', level);
     await prefs.setInt('xp', xp);
-    await prefs.setInt('coins', coins); // <-- Save coins
+    await prefs.setInt('coins', coins);
     await prefs.setStringList('unlockedRewards', unlockedRewards);
+    await prefs.setString('lastSession', DateTime.now().toIso8601String()); // <-- Save timestamp
+  }
+
+  bool isDailyBonusEligible() {
+    if (lastSession == null) return true;
+    final now = DateTime.now();
+    return now.difference(lastSession!).inHours >= 24;
   }
 }

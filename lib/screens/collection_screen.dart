@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:focuspal/models/player.dart';
+import 'package:focuspal/widgets/background.dart';
 
 class CollectionScreen extends StatelessWidget {
   final Player player;
@@ -24,33 +25,36 @@ class CollectionScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text("My Collection")),
-      body: GridView.builder(
-        padding: const EdgeInsets.all(16),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.9,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
+        body: BackgroundWrapper(
+          child: GridView.builder(
+            padding: const EdgeInsets.all(16),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.9,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+            ),
+            itemCount: allItems.length,
+            itemBuilder: (context, index) {
+              final item = allItems[index];
+              return Card(
+               elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                 mainAxisAlignment: MainAxisAlignment.center,
+                 children: [
+                    Image.asset(item['icon'] as String, width: 60, height: 60),
+                   const SizedBox(height: 10),
+                   Text(item['name'] as String, textAlign: TextAlign.center),
+                 ],
+               ),
+              );
+            },
+          ),
         ),
-        itemCount: allItems.length,
-        itemBuilder: (context, index) {
-          final item = allItems[index];
-          return Card(
-            elevation: 4,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset(item['icon'] as String, width: 60, height: 60),
-                const SizedBox(height: 10),
-                Text(item['name'] as String, textAlign: TextAlign.center),
-              ],
-            ),
-          );
-        },
-      ),
-    );
+      );
+
   }
 }

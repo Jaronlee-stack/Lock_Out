@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/home_screen.dart';
+import 'package:focuspal/widgets/background.dart';
 import 'screens/timer_screen.dart';
 import 'screens/rewards_screen.dart';
 import 'screens/settings_screen.dart';
@@ -63,8 +63,7 @@ class _MainPageState extends State<MainPage> {
   }
 
   void _onItemTapped(int index) async {
-    if (index == 6) {
-      // Settings tab
+    if (index == 5) {
       final result = await Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => const SettingsScreen()),
@@ -72,8 +71,11 @@ class _MainPageState extends State<MainPage> {
 
       if (result != null && result is int) {
         setState(() => _focusMinutes = result);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Focus time updated to $result minutes')),
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+          SnackBar(content: Text('Focus time updated to $result minutes'),
+                  duration: Duration(seconds: 1)),
         );
       }
     } else {
@@ -86,7 +88,6 @@ class _MainPageState extends State<MainPage> {
   List<Widget> get _screens {
     if (player == null) return [];
     return [
-      HomeScreen(onNavigate: _onItemTapped, player: player!),
       TimerScreen(focusMinutes: _focusMinutes, player: player!),
       RewardsScreen(player: player!),
       RewardsShop(player: player!),
@@ -104,13 +105,14 @@ class _MainPageState extends State<MainPage> {
     }
 
     return Scaffold(
-      body: _screens[_selectedIndex],
+      body: BackgroundWrapper(
+      child: _screens[_selectedIndex],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.timer), label: 'Timer'),
           BottomNavigationBarItem(icon: Icon(Icons.star), label: 'Rewards'),
           BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Shop'),

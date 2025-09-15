@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -8,7 +9,27 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  int _focusMinutes = 25; // default
+  int _focusMinutes = 25;
+  int _totalFocusSeconds = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTotalFocusTime();
+  }
+
+  Future<void> _loadTotalFocusTime() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _totalFocusSeconds = prefs.getInt('totalFocusSeconds') ?? 0;
+    });
+  }
+
+  String _formatDuration(int seconds) {
+    final hours = seconds ~/ 3600;
+    final minutes = (seconds % 3600) ~/ 60;
+    return '${hours}h ${minutes}m';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,6 +38,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
               'Focus Session Length',
@@ -26,7 +48,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               value: _focusMinutes.toDouble(),
               min: 5,
               max: 60,
-              divisions: 11, // steps of 5 minutes
+              divisions: 11,
               label: '$_focusMinutes min',
               onChanged: (value) {
                 setState(() {
@@ -35,10 +57,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             Text('$_focusMinutes minutes'),
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
+            const Text(
+              'Total Time Focused',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              _formatDuration(_totalFocusSeconds),
+              style: const TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+            const Spacer(),
             ElevatedButton(
               onPressed: () {
-                Navigator.pop(context, _focusMinutes); // return value
+                Navigator.pop(context, _focusMinutes);
               },
               child: const Text('Save'),
             ),
